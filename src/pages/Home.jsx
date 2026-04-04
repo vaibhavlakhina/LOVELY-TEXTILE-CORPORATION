@@ -178,31 +178,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ============= TESTIMONIALS ============= */}
-      <section className="section">
-        <div className="container">
-          <div className="section-header">
-            <span className="section-label">Trusted by Thousands</span>
-            <h2 className="section-title">What Our Customers Say</h2>
-            <div className="gold-divider" />
-          </div>
-          <div className={styles.testimonialGrid}>
-            {TESTIMONIALS.map(t => (
-              <div key={t.id} className={styles.testimonial}>
-                <div className={styles.stars}>{'★'.repeat(t.rating)}</div>
-                <p className={styles.testimonialText}>"{t.text}"</p>
-                <div className={styles.testimonialAuthor}>
-                  <div className={styles.avatar}>{t.name[0]}</div>
-                  <div>
-                    <div className={styles.authorName}>{t.name}</div>
-                    <div className={styles.authorRole}>{t.role}</div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+
 
       {/* ============= INSTAGRAM ============= */}
       <section className={styles.igSection}>
