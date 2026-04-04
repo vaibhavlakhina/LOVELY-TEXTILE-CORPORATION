@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
-import { FEATURED_PRODUCTS, NEW_ARRIVALS, TESTIMONIALS, STATS, buildWhatsAppUrl } from '../data/products'
+import { TESTIMONIALS, STATS, buildWhatsAppUrl } from '../data/products'
+import { useProducts } from '../hooks/useProducts'
 import ProductCard from '../components/ProductCard'
 import styles from './Home.module.css'
 
@@ -13,6 +14,11 @@ const INSTAGRAM_POSTS = [
 ]
 
 export default function Home() {
+  const { products, loading } = useProducts()
+  
+  const featured = products.slice(0, 4)
+  const newArrivals = products.filter(p => p?.badge === 'New').slice(0, 4)
+
   const waWholesale = buildWhatsAppUrl('Hi LTC Textiles! I am interested in getting wholesale prices. Please share details.')
   const waShop = buildWhatsAppUrl('Hi LTC Textiles! I want to shop your products. Please help me.')
 
@@ -91,9 +97,15 @@ export default function Home() {
             <div className="gold-divider" />
           </div>
           <div className={styles.productsGrid}>
-            {FEATURED_PRODUCTS.map(p => (
-              <ProductCard key={p.id} product={p} />
-            ))}
+            {loading ? (
+              <p style={{ textAlign: 'center', gridColumn: '1 / -1', color: 'var(--text-mid)' }}>Loading products...</p>
+            ) : featured.length === 0 ? (
+              <p style={{ textAlign: 'center', gridColumn: '1 / -1', color: 'var(--text-mid)' }}>No products available yet.</p>
+            ) : (
+              featured.map(p => (
+                <ProductCard key={p.id} product={p} />
+              ))
+            )}
           </div>
           <div className={styles.viewAllWrap}>
             <Link to="/products" className="btn-primary" id="home-view-all-btn">
@@ -153,9 +165,15 @@ export default function Home() {
             <div className="gold-divider" />
           </div>
           <div className={styles.productsGrid}>
-            {NEW_ARRIVALS.map(p => (
-              <ProductCard key={p.id} product={p} />
-            ))}
+            {loading ? (
+              <p style={{ textAlign: 'center', gridColumn: '1 / -1', color: 'var(--text-mid)' }}>Loading products...</p>
+            ) : newArrivals.length === 0 ? (
+              <p style={{ textAlign: 'center', gridColumn: '1 / -1', color: 'var(--text-mid)' }}>No new arrivals right now.</p>
+            ) : (
+              newArrivals.map(p => (
+                <ProductCard key={p.id} product={p} />
+              ))
+            )}
           </div>
         </div>
       </section>
