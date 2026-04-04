@@ -27,7 +27,7 @@ export default function Home() {
           className={styles.heroBg}
         />
         <div className={styles.heroContent}>
-          <span className={styles.heroLabel}>Premium Home Textiles Since 2008</span>
+          <span className={styles.heroLabel}>Premium Home Textiles</span>
           <h1 className={styles.heroTitle}>
             Wrap Your World<br />
             <em>in Pure Luxury</em>
