@@ -1,0 +1,186 @@
+/* Header */
+.header {
+  background: var(--navy);
+  padding: 140px 0 80px;
+  position: relative;
+  overflow: hidden;
+}
+.headerBg {
+  position: absolute;
+  inset: 0;
+  background: url('/product_fabric_1774271174747.png') center/cover no-repeat;
+  opacity: 0.08;
+}
+.headerContent {
+  position: relative;
+  z-index: 1;
+}
+.headerTitle {
+  color: var(--white);
+  margin-bottom: 12px;
+}
+.headerSub {
+  color: rgba(255,255,255,0.72);
+  font-size: 1.05rem;
+  max-width: 520px;
+}
+
+/* Benefits */
+.benefitsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 28px;
+}
+.benefit {
+  background: var(--white);
+  border-radius: var(--radius-md);
+  padding: 32px 28px;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.benefit:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+}
+.benefitIcon {
+  font-size: 2.2rem;
+  display: block;
+  margin-bottom: 16px;
+}
+.benefitTitle {
+  font-size: 1.05rem;
+  color: var(--navy);
+  margin-bottom: 10px;
+}
+.benefitDesc {
+  font-size: 0.88rem;
+  color: var(--text-mid);
+  line-height: 1.75;
+}
+
+/* Form Section */
+.formSection {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 56px;
+  padding: 64px 0 80px;
+}
+.formInfo {}
+.formTitle {
+  color: var(--navy);
+  margin-bottom: 14px;
+  margin-top: 8px;
+}
+.formDesc {
+  color: var(--text-mid);
+  line-height: 1.75;
+  margin-bottom: 28px;
+  font-size: 0.95rem;
+}
+.infoPoints {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 36px;
+}
+.infoPoint {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.9rem;
+  color: var(--text-mid);
+}
+.directContact {}
+.directLabel {
+  font-size: 0.85rem;
+  color: var(--text-light);
+  margin-bottom: 12px;
+}
+
+/* Form Card */
+.formCard {
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  padding: 40px 36px;
+  box-shadow: var(--shadow-md);
+}
+.formCardTitle {
+  font-size: 1.3rem;
+  color: var(--navy);
+  margin-bottom: 28px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid var(--cream-dark);
+}
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  margin-bottom: 24px;
+}
+.fullWidth { grid-column: 1 / -1; }
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-mid);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.input {
+  padding: 12px 16px;
+  border: 2px solid var(--cream-dark);
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  color: var(--text-dark);
+  background: var(--cream);
+  outline: none;
+  transition: border-color 0.25s, box-shadow 0.25s;
+  width: 100%;
+}
+.input:focus {
+  border-color: var(--navy);
+  background: var(--white);
+  box-shadow: 0 0 0 4px rgba(11,31,58,0.06);
+}
+.textarea { resize: vertical; min-height: 110px; }
+
+.submitBtn {
+  width: 100%;
+  justify-content: center;
+  font-size: 1rem;
+  padding: 16px;
+}
+
+/* Success */
+.successState {
+  text-align: center;
+  padding: 48px 24px;
+}
+.successIcon {
+  font-size: 4rem;
+  margin-bottom: 20px;
+}
+.successState h3 {
+  font-size: 1.5rem;
+  color: var(--navy);
+  margin-bottom: 12px;
+}
+.successState p {
+  color: var(--text-mid);
+  margin-bottom: 28px;
+  line-height: 1.7;
+}
+
+@media (max-width: 1024px) {
+  .benefitsGrid { grid-template-columns: repeat(2, 1fr); }
+  .formSection { grid-template-columns: 1fr; gap: 32px; }
+}
+@media (max-width: 640px) {
+  .benefitsGrid { grid-template-columns: 1fr; }
+  .formGrid { grid-template-columns: 1fr; }
+  .formCard { padding: 28px 20px; }
+}

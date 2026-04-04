@@ -1,0 +1,179 @@
+/* Header */
+.header {
+  background: var(--navy);
+  padding: 140px 0 80px;
+  position: relative;
+  overflow: hidden;
+}
+.headerBg {
+  position: absolute;
+  inset: 0;
+  background: url('/product_bedsheet_set_1774271215760.png') center/cover no-repeat;
+  opacity: 0.07;
+}
+.headerContent {
+  position: relative;
+  z-index: 1;
+}
+.headerTitle {
+  color: var(--white);
+  margin-bottom: 12px;
+}
+.headerSub {
+  color: rgba(255,255,255,0.72);
+  font-size: 1.05rem;
+  max-width: 480px;
+}
+
+/* Contact Cards */
+.contactGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+  margin-bottom: 48px;
+}
+.contactCard {
+  background: var(--white);
+  border-radius: var(--radius-md);
+  padding: 32px 24px;
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border-top: 3px solid transparent;
+}
+.contactCard:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+  border-top-color: var(--gold);
+}
+.cardIcon {
+  font-size: 2.5rem;
+  display: block;
+  margin-bottom: 16px;
+}
+.cardTitle {
+  font-size: 1rem;
+  color: var(--navy);
+  margin-bottom: 8px;
+}
+.cardValue {
+  font-size: 0.9rem;
+  color: var(--text-dark);
+  font-weight: 500;
+  margin-bottom: 6px;
+  line-height: 1.4;
+}
+.cardSub {
+  font-size: 0.78rem;
+  color: var(--text-light);
+}
+
+/* WhatsApp Banner */
+.waBanner {
+  background: var(--navy);
+  border-radius: var(--radius-lg);
+  padding: 48px 52px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+}
+.waLeft {}
+.waTitle {
+  color: var(--white);
+  margin-bottom: 10px;
+}
+.waDesc {
+  color: rgba(255,255,255,0.7);
+  font-size: 0.95rem;
+  max-width: 460px;
+  line-height: 1.7;
+}
+.waRight {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  flex-shrink: 0;
+}
+.waNum {
+  color: var(--gold);
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+/* Bottom Grid */
+.bottomGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 56px;
+}
+
+.mapCol {}
+.mapBox {
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  height: 360px;
+  position: relative;
+}
+.mapOverlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: linear-gradient(transparent, rgba(11,31,58,0.7));
+  z-index: 2;
+}
+
+/* FAQs */
+.faqCol {}
+.faqs { display: flex; flex-direction: column; gap: 0; }
+.faq {
+  border-bottom: 1px solid var(--cream-dark);
+}
+.faqQ {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 0;
+  text-align: left;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--navy);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.faqQ:hover { color: var(--gold-dark); }
+.faqIcon {
+  font-size: 1.5rem;
+  font-weight: 300;
+  color: var(--gold-dark);
+  transition: transform 0.3s ease;
+  flex-shrink: 0;
+}
+.faqOpen { transform: rotate(45deg); }
+.faqA {
+  padding: 0 0 20px;
+  color: var(--text-mid);
+  font-size: 0.88rem;
+  line-height: 1.75;
+  animation: fadeInUp 0.25s ease;
+}
+
+@media (max-width: 1024px) {
+  .contactGrid { grid-template-columns: repeat(2, 1fr); }
+  .bottomGrid { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  .contactGrid { grid-template-columns: 1fr; }
+  .waBanner { flex-direction: column; text-align: center; padding: 36px 24px; }
+  .waDesc { max-width: 100%; }
+}
