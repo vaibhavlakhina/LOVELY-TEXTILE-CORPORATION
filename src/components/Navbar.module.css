@@ -113,4 +113,63 @@
   box-shadow: 0 5px 20px rgba(37,211,102,0.5);
 }
 
+@media (max-width: 768px) {
+  .container {
+    height: auto;
+    flex-wrap: wrap;
+    padding: 10px 16px 0;
+    gap: 0;
+  }
 
+  /* Logo row */
+  .logo {
+    flex: 1;
+  }
+  .logoPrimary {
+    font-size: 1.1rem;
+    letter-spacing: 2px;
+  }
+  .logoSub {
+    font-size: 0.52rem;
+  }
+  .logoIcon {
+    font-size: 1.2rem;
+  }
+
+  /* WhatsApp button — stay on right of logo row */
+  .actions {
+    flex-shrink: 0;
+  }
+  .waBtn {
+    padding: 7px 12px;
+    font-size: 0.75rem;
+    gap: 5px;
+  }
+  .waBtn svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  /* Nav links — full-width scrollable row below logo */
+  .desktopNav {
+    display: flex;
+    width: 100%;
+    overflow-x: auto;
+    gap: 0;
+    padding: 8px 0 10px;
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE */
+    border-top: 1px solid rgba(255,255,255,0.08);
+    margin-top: 8px;
+  }
+  .desktopNav::-webkit-scrollbar {
+    display: none; /* Chrome/Safari */
+  }
+
+  .navLink {
+    flex-shrink: 0;
+    padding: 4px 16px 4px;
+    font-size: 0.82rem;
+    white-space: nowrap;
+  }
+}
