@@ -21,6 +21,7 @@ export default function ProductDetail() {
 
   const [selectedSize,  setSelectedSize]  = useState(null)
   const [selectedColor, setSelectedColor] = useState(null)
+  const [selectedImage, setSelectedImage] = useState(null)
   const [tab,           setTab]           = useState('description')
 
   // Fetch the product by Firestore doc ID
@@ -33,6 +34,7 @@ export default function ProductDetail() {
         setNotFound(true)
       } else {
         setProduct(data)
+        setSelectedImage(data.images?.[0] || data.image || '/placeholder.png')
       }
       setLoading(false)
     }).catch(() => {
@@ -98,11 +100,16 @@ export default function ProductDetail() {
                     {product.badge}
                   </span>
                 )}
-                <img src={product.image} alt={product.name} className={styles.img} />
+                <img src={selectedImage} alt={product.name} className={styles.img} />
               </div>
               <div className={styles.thumbGrid}>
-                {[product.image, product.image, product.image].map((img, i) => (
-                  <div key={i} className={`${styles.thumb} ${i === 0 ? styles.activeThumb : ''}`}>
+                {(product.images?.length > 0 ? product.images : [product.image].filter(Boolean)).map((img, i) => (
+                  <div 
+                    key={i} 
+                    className={`${styles.thumb} ${selectedImage === img ? styles.activeThumb : ''}`}
+                    onClick={() => setSelectedImage(img)}
+                    style={{ cursor: 'pointer' }}
+                  >
                     <img src={img} alt={`${product.name} view ${i + 1}`} />
                   </div>
                 ))}

@@ -23,6 +23,7 @@ const EMPTY_FORM = {
   colors: '',   // comma-separated hex values
   features: '', // newline-separated → stored as array
   image: '',
+  imagesText: '', // comma-separated URLs
 }
 
 export default function Admin() {
@@ -43,8 +44,8 @@ export default function Admin() {
   const [saving,    setSaving]    = useState(false)
   const [saveMsg,   setSaveMsg]   = useState('')
   const [deleting,  setDeleting]  = useState(null)
-  const [imgFile,   setImgFile]   = useState(null)
-  const [imgPreview, setImgPreview] = useState('')
+  const [imgFiles,  setImgFiles]  = useState([])
+  const [imgPreviews, setImgPreviews] = useState([])
   const [uploadPct, setUploadPct] = useState(0)
 
   const fileRef = useRef(null)
@@ -64,12 +65,12 @@ export default function Admin() {
     }
   }
 
-  // ─── Select file for upload ────────────────────────────────
+  // ─── Select files for upload ────────────────────────────────
   function handleFileChange(e) {
-    const file = e.target.files[0]
-    if (!file) return
-    setImgFile(file)
-    setImgPreview(URL.createObjectURL(file))
+    const files = Array.from(e.target.files)
+    if (!files || files.length === 0) return
+    setImgFiles(files)
+    setImgPreviews(files.map(f => URL.createObjectURL(f)))
   }
 
   // ─── Form input change ─────────────────────────────────────
@@ -97,17 +98,18 @@ export default function Admin() {
       colors:       (product.colors   ?? []).join(', '),
       features:     (product.features ?? []).join('\n'),
       image:        product.image        ?? '',
+      imagesText:   (product.images ?? [product.image].filter(Boolean)).join(', '),
     })
-    setImgPreview(product.image ?? '')
-    setImgFile(null)
+    setImgPreviews(product.images ? product.images : (product.image ? [product.image] : []))
+    setImgFiles([])
     formRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
 
   function cancelEdit() {
     setEditId(null)
     setForm(EMPTY_FORM)
-    setImgFile(null)
-    setImgPreview('')
+    setImgFiles([])
+    setImgPreviews([])
     setSaveMsg('')
   }
 
@@ -118,13 +120,28 @@ export default function Admin() {
     setSaveMsg('')
 
     try {
-      let imageUrl = form.image
+      let uploadedUrls = []
 
-      // Upload new image if one was selected
-      if (imgFile) {
+      // Upload new images if selected
+      if (imgFiles.length > 0) {
         setUploadPct(0)
-        imageUrl = await uploadProductImage(imgFile, (pct) => setUploadPct(pct))
+        let completed = 0
+        for (const file of imgFiles) {
+          const url = await uploadProductImage(file, (pct) => { /* simplified progress */ })
+          uploadedUrls.push(url)
+          completed++
+          setUploadPct(Math.round((completed / imgFiles.length) * 100))
+        }
       }
+
+      // Merge manually typed URLs
+      const manualUrls = form.imagesText.split(',').map(s => s.trim()).filter(Boolean)
+      
+      // The final images array
+      const finalImages = [...manualUrls, ...uploadedUrls]
+      
+      // For backwards compatibility we set the first image as `image`
+      const primaryImage = finalImages.length > 0 ? finalImages[0] : (form.image || '')
 
       // Clean up form data
       const data = {
@@ -142,7 +159,8 @@ export default function Admin() {
         sizes:    form.sizes.split(',').map(s => s.trim()).filter(Boolean),
         colors:   form.colors.split(',').map(s => s.trim()).filter(Boolean),
         features: form.features.split('\n').map(s => s.trim()).filter(Boolean),
-        image:    imageUrl,
+        image:    primaryImage,
+        images:   finalImages,
       }
 
       if (editId) {
@@ -360,35 +378,39 @@ export default function Admin() {
 
             {/* Image Upload */}
             <div className={styles.field}>
-              <label>Product Image</label>
-              <div className={styles.imageUploadRow}>
-                {imgPreview && (
-                  <img src={imgPreview} alt="preview" className={styles.imgPreview} />
-                )}
-                <div className={styles.imageUploadBtn}>
+              <label>Product Images</label>
+              <div className={styles.imageUploadRow} style={{ flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '8px' }}>
+                  {imgPreviews.map((prevName, idx) => (
+                    <img key={idx} src={prevName} alt="preview" style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '8px' }} />
+                  ))}
+                </div>
+                <div className={styles.imageUploadBtn} style={{ width: '100%' }}>
                   <button type="button" onClick={() => fileRef.current?.click()} className={styles.browseBtn} id="admin-browse-img">
-                    📁 Choose Image
+                    📁 Choose Images
                   </button>
                   <input
                     ref={fileRef}
                     type="file"
                     accept="image/*"
+                    multiple
                     onChange={handleFileChange}
                     style={{ display: 'none' }}
                   />
-                  {imgFile && <span className={styles.fileName}>{imgFile.name}</span>}
+                  {imgFiles.length > 0 && <span className={styles.fileName}>{imgFiles.length} file(s) selected</span>}
                   {uploadPct > 0 && uploadPct < 100 && (
                     <div className={styles.progressBar}>
                       <div className={styles.progressFill} style={{ width: `${uploadPct}%` }} />
                     </div>
                   )}
-                  <p className={styles.orUrl}>or enter URL directly:</p>
+                  <p className={styles.orUrl}>or enter comma-separated URLs directly:</p>
                   <input
-                    name="image"
-                    value={form.image}
+                    name="imagesText"
+                    value={form.imagesText}
                     onChange={handleChange}
-                    placeholder="https://... or /public-image.png"
+                    placeholder="https://img1.jpg, https://img2.jpg ..."
                     className={styles.imageUrlInput}
+                    style={{ width: '100%' }}
                   />
                 </div>
               </div>
@@ -431,7 +453,7 @@ export default function Admin() {
                 <div key={p.id} className={styles.tableRow} id={`admin-row-${p.id}`}>
                   <div className={styles.productInfo}>
                     <img
-                      src={p.image || '/placeholder.png'}
+                      src={p.images?.[0] || p.image || '/placeholder.png'}
                       alt={p.name}
                       className={styles.tableImg}
                       onError={e => { e.target.src = '' }}
