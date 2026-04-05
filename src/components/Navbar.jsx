@@ -11,7 +11,6 @@ const NAV_LINKS = [
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false)
-  const [menuOpen, setMenuOpen] = useState(false)
   const { pathname } = useLocation()
 
   useEffect(() => {
@@ -20,7 +19,7 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  useEffect(() => setMenuOpen(false), [pathname])
+
 
   return (
     <header className={`${styles.navbar} ${scrolled ? styles.scrolled : ''}`}>
@@ -65,41 +64,10 @@ export default function Navbar() {
             WhatsApp
           </a>
 
-          {/* Hamburger */}
-          <button
-            className={`${styles.hamburger} ${menuOpen ? styles.open : ''}`}
-            onClick={() => setMenuOpen(v => !v)}
-            aria-label="Toggle menu"
-            id="navbar-hamburger"
-          >
-            <span /><span /><span />
-          </button>
+
         </div>
       </div>
 
-      {/* Mobile Menu */}
-      <div className={`${styles.mobileMenu} ${menuOpen ? styles.mobileOpen : ''}`}>
-        {NAV_LINKS.map(link => (
-          <NavLink
-            key={link.to}
-            to={link.to}
-            end={link.to === '/'}
-            className={({ isActive }) =>
-              `${styles.mobileLink} ${isActive ? styles.mobileActive : ''}`
-            }
-          >
-            {link.label}
-          </NavLink>
-        ))}
-        <a
-          href="https://wa.me/919355567899?text=Hi%20Lovely%20Textile%20Corporation!%20I%27m%20interested%20in%20your%20products."
-          className={styles.mobileWa}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          📱 Chat on WhatsApp
-        </a>
-      </div>
     </header>
   )
 }
