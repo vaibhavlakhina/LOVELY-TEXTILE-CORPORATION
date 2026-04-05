@@ -20,7 +20,7 @@ export default function ProductDetail() {
   const [related,  setRelated]  = useState([])
 
   const [selectedSize,  setSelectedSize]  = useState(null)
-  const [selectedColor, setSelectedColor] = useState(null)
+  const [selectedColor, setSelectedColor] = useState(null)  // full variant object
   const [selectedImage, setSelectedImage] = useState(null)
   const [tab,           setTab]           = useState('description')
 
@@ -102,18 +102,26 @@ export default function ProductDetail() {
                 )}
                 <img src={selectedImage} alt={product.name} className={styles.img} />
               </div>
-              <div className={styles.thumbGrid}>
-                {(product.images?.length > 0 ? product.images : [product.image].filter(Boolean)).map((img, i) => (
-                  <div 
-                    key={i} 
-                    className={`${styles.thumb} ${selectedImage === img ? styles.activeThumb : ''}`}
-                    onClick={() => setSelectedImage(img)}
-                    style={{ cursor: 'pointer' }}
-                  >
-                    <img src={img} alt={`${product.name} view ${i + 1}`} />
+              {/* Gallery: show images of selected color, or fallback */}
+              {(() => {
+                const galleryImgs = selectedColor?.images?.length > 0
+                  ? selectedColor.images
+                  : (product.images?.length > 0 ? product.images : [product.image].filter(Boolean))
+                return (
+                  <div className={styles.thumbGrid}>
+                    {galleryImgs.map((img, i) => (
+                      <div
+                        key={i}
+                        className={`${styles.thumb} ${selectedImage === img ? styles.activeThumb : ''}`}
+                        onClick={() => setSelectedImage(img)}
+                        style={{ cursor: 'pointer' }}
+                      >
+                        <img src={img} alt={`${product.name} view ${i + 1}`} />
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
+                )
+              })()}
             </div>
 
             {/* Info */}
@@ -162,7 +170,27 @@ export default function ProductDetail() {
               )}
 
               {/* Colors */}
-              {product.colors?.length > 0 && (
+              {product.colorVariants?.length > 0 ? (
+                <div className={styles.optionGroup}>
+                  <label className={styles.optionLabel}>
+                    Color: {selectedColor && <strong>{selectedColor.name}</strong>}
+                  </label>
+                  <div className={styles.colors}>
+                    {product.colorVariants.map((variant, i) => (
+                      <button
+                        key={i}
+                        onClick={() => {
+                          setSelectedColor(variant)
+                          setSelectedImage(variant.images?.[0] ?? null)
+                        }}
+                        className={`${styles.colorBtn} ${selectedColor === variant ? styles.selectedColor : ''}`}
+                        style={{ background: variant.hex }}
+                        title={variant.name}
+                      />
+                    ))}
+                  </div>
+                </div>
+              ) : product.colors?.length > 0 && (
                 <div className={styles.optionGroup}>
                   <label className={styles.optionLabel}>Color Variants</label>
                   <div className={styles.colors}>

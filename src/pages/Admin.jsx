@@ -2,6 +2,7 @@
 // src/pages/Admin.jsx
 // Admin panel: login + full product management (add/edit/delete)
 // with Firebase Auth, Firestore, and Storage image uploads.
+// Each color variant has its own name, hex and image gallery.
 // Access this page at: http://localhost:5173/admin
 // ============================================================
 
@@ -20,11 +21,11 @@ const EMPTY_FORM = {
   badge: '', description: '', material: '', dimensions: '', care: '',
   rating: '0', reviews: '0',
   sizes: '',    // comma-separated string → stored as array
-  colors: '',   // comma-separated hex values
   features: '', // newline-separated → stored as array
-  image: '',
-  imagesText: '', // comma-separated URLs
 }
+
+// ─── Default empty color variant ─────────────────────────
+const EMPTY_VARIANT = { name: '', hex: '#000000', imagesText: '', files: [], previews: [] }
 
 export default function Admin() {
   const { user, loading: authLoading } = useAuth()
@@ -39,17 +40,19 @@ export default function Admin() {
   const { products, loading: productsLoading } = useProducts()
 
   // ─── Form state ──────────────────────────────────────────
-  const [form,      setForm]      = useState(EMPTY_FORM)
-  const [editId,    setEditId]    = useState(null)   // null = add mode, string = edit mode
-  const [saving,    setSaving]    = useState(false)
-  const [saveMsg,   setSaveMsg]   = useState('')
-  const [deleting,  setDeleting]  = useState(null)
-  const [imgFiles,  setImgFiles]  = useState([])
-  const [imgPreviews, setImgPreviews] = useState([])
-  const [uploadPct, setUploadPct] = useState(0)
+  const [form,       setForm]      = useState(EMPTY_FORM)
+  const [editId,     setEditId]    = useState(null)
+  const [saving,     setSaving]    = useState(false)
+  const [saveMsg,    setSaveMsg]   = useState('')
+  const [deleting,   setDeleting]  = useState(null)
+  const [uploadPct,  setUploadPct] = useState(0)
 
-  const fileRef = useRef(null)
-  const formRef = useRef(null)
+  // ─── Color variants state ──────────────────────────────
+  // Each variant: { name, hex, imagesText, files[], previews[] }
+  const [colorVariants, setColorVariants] = useState([{ ...EMPTY_VARIANT }])
+
+  const fileRefs = useRef([])
+  const formRef  = useRef(null)
 
   // ─── Auth: Handle login ───────────────────────────────────
   async function handleLogin(e) {
@@ -65,51 +68,98 @@ export default function Admin() {
     }
   }
 
-  // ─── Select files for upload ────────────────────────────────
-  function handleFileChange(e) {
-    const files = Array.from(e.target.files)
-    if (!files || files.length === 0) return
-    setImgFiles(files)
-    setImgPreviews(files.map(f => URL.createObjectURL(f)))
-  }
-
   // ─── Form input change ─────────────────────────────────────
   const handleChange = (e) => {
     const { name, value } = e.target
     setForm(prev => ({ ...prev, [name]: value }))
   }
 
+  // ─── Color variant helpers ────────────────────────────────
+  function updateVariant(idx, field, value) {
+    setColorVariants(prev => {
+      const next = [...prev]
+      next[idx] = { ...next[idx], [field]: value }
+      return next
+    })
+  }
+
+  function addVariant() {
+    setColorVariants(prev => [...prev, { ...EMPTY_VARIANT }])
+  }
+
+  function removeVariant(idx) {
+    setColorVariants(prev => prev.filter((_, i) => i !== idx))
+  }
+
+  function handleVariantFiles(e, idx) {
+    const files = Array.from(e.target.files)
+    if (!files.length) return
+    const previews = files.map(f => URL.createObjectURL(f))
+    setColorVariants(prev => {
+      const next = [...prev]
+      next[idx] = { ...next[idx], files, previews }
+      return next
+    })
+  }
+
   // ─── Load product into form for editing ───────────────────
   function startEdit(product) {
     setEditId(product.id)
     setForm({
-      name:         product.name         ?? '',
-      category:     product.category     ?? 'bedsheets',
-      price:        product.price        ?? '',
+      name:           product.name           ?? '',
+      category:       product.category       ?? 'bedsheets',
+      price:          product.price          ?? '',
       wholesalePrice: product.wholesalePrice ?? '',
-      badge:        product.badge        ?? '',
-      description:  product.description  ?? '',
-      material:     product.material     ?? '',
-      dimensions:   product.dimensions   ?? '',
-      care:         product.care         ?? '',
-      rating:       String(product.rating  ?? 0),
-      reviews:      String(product.reviews ?? 0),
-      sizes:        (product.sizes    ?? []).join(', '),
-      colors:       (product.colors   ?? []).join(', '),
-      features:     (product.features ?? []).join('\n'),
-      image:        product.image        ?? '',
-      imagesText:   (product.images ?? [product.image].filter(Boolean)).join(', '),
+      badge:          product.badge          ?? '',
+      description:    product.description    ?? '',
+      material:       product.material       ?? '',
+      dimensions:     product.dimensions     ?? '',
+      care:           product.care           ?? '',
+      rating:         String(product.rating  ?? 0),
+      reviews:        String(product.reviews ?? 0),
+      sizes:          (product.sizes    ?? []).join(', '),
+      features:       (product.features ?? []).join('\n'),
     })
-    setImgPreviews(product.images ? product.images : (product.image ? [product.image] : []))
-    setImgFiles([])
+
+    // Load existing color variants (or create one from legacy data)
+    if (product.colorVariants?.length > 0) {
+      setColorVariants(product.colorVariants.map(v => ({
+        name:       v.name  ?? '',
+        hex:        v.hex   ?? '#000000',
+        imagesText: (v.images ?? []).join(', '),
+        files:      [],
+        previews:   v.images ?? [],
+      })))
+    } else {
+      // Legacy: single image, old colors array
+      const legacyImages = product.images ?? (product.image ? [product.image] : [])
+      const legacyColors = product.colors ?? []
+      if (legacyColors.length > 0) {
+        setColorVariants(legacyColors.map((hex, i) => ({
+          name:       hex,
+          hex,
+          imagesText: i === 0 ? legacyImages.join(', ') : '',
+          files:      [],
+          previews:   i === 0 ? legacyImages : [],
+        })))
+      } else {
+        setColorVariants([{
+          name:       'Default',
+          hex:        '#0B1F3A',
+          imagesText: legacyImages.join(', '),
+          files:      [],
+          previews:   legacyImages,
+        }])
+      }
+    }
+
     formRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
 
   function cancelEdit() {
     setEditId(null)
     setForm(EMPTY_FORM)
-    setImgFiles([])
-    setImgPreviews([])
+    setColorVariants([{ ...EMPTY_VARIANT }])
     setSaveMsg('')
   }
 
@@ -120,30 +170,38 @@ export default function Admin() {
     setSaveMsg('')
 
     try {
-      let uploadedUrls = []
+      // Upload images for each color variant
+      const builtVariants = []
+      let totalFiles = colorVariants.reduce((acc, v) => acc + v.files.length, 0)
+      let uploadedCount = 0
 
-      // Upload new images if selected
-      if (imgFiles.length > 0) {
-        setUploadPct(0)
-        let completed = 0
-        for (const file of imgFiles) {
-          const url = await uploadProductImage(file, (pct) => { /* simplified progress */ })
+      for (const variant of colorVariants) {
+        let uploadedUrls = []
+
+        // Upload files
+        for (const file of variant.files) {
+          const url = await uploadProductImage(file, () => {})
           uploadedUrls.push(url)
-          completed++
-          setUploadPct(Math.round((completed / imgFiles.length) * 100))
+          uploadedCount++
+          setUploadPct(Math.round((uploadedCount / Math.max(totalFiles, 1)) * 100))
         }
+
+        // Merge with manual URLs
+        const manualUrls = variant.imagesText.split(',').map(s => s.trim()).filter(Boolean)
+        const finalImages = [...manualUrls, ...uploadedUrls]
+
+        builtVariants.push({
+          name:   variant.name.trim() || variant.hex,
+          hex:    variant.hex,
+          images: finalImages,
+        })
       }
 
-      // Merge manually typed URLs
-      const manualUrls = form.imagesText.split(',').map(s => s.trim()).filter(Boolean)
-      
-      // The final images array
-      const finalImages = [...manualUrls, ...uploadedUrls]
-      
-      // For backwards compatibility we set the first image as `image`
-      const primaryImage = finalImages.length > 0 ? finalImages[0] : (form.image || '')
+      // Derive top-level arrays for backwards compatibility
+      const primaryImage  = builtVariants[0]?.images?.[0] ?? ''
+      const allImages     = builtVariants.flatMap(v => v.images)
+      const colorsHex     = builtVariants.map(v => v.hex)
 
-      // Clean up form data
       const data = {
         name:           form.name.trim(),
         category:       form.category,
@@ -154,13 +212,16 @@ export default function Admin() {
         material:       form.material.trim(),
         dimensions:     form.dimensions.trim(),
         care:           form.care.trim(),
-        rating:         parseFloat(form.rating) || 0,
-        reviews:        parseInt(form.reviews)  || 0,
-        sizes:    form.sizes.split(',').map(s => s.trim()).filter(Boolean),
-        colors:   form.colors.split(',').map(s => s.trim()).filter(Boolean),
-        features: form.features.split('\n').map(s => s.trim()).filter(Boolean),
-        image:    primaryImage,
-        images:   finalImages,
+        rating:         parseFloat(form.rating)  || 0,
+        reviews:        parseInt(form.reviews)   || 0,
+        sizes:          form.sizes.split(',').map(s => s.trim()).filter(Boolean),
+        features:       form.features.split('\n').map(s => s.trim()).filter(Boolean),
+        // New structured data
+        colorVariants:  builtVariants,
+        // Legacy compat
+        colors:         colorsHex,
+        image:          primaryImage,
+        images:         allImages,
       }
 
       if (editId) {
@@ -358,16 +419,10 @@ export default function Admin() {
               </div>
             </div>
 
-            {/* Sizes & Colors */}
-            <div className={styles.formGrid}>
-              <div className={styles.field}>
-                <label>Sizes <span className={styles.hint}>(comma-separated)</span></label>
-                <input name="sizes" value={form.sizes} onChange={handleChange} placeholder="Single, Double, King, Queen" />
-              </div>
-              <div className={styles.field}>
-                <label>Colors <span className={styles.hint}>(comma-separated hex)</span></label>
-                <input name="colors" value={form.colors} onChange={handleChange} placeholder="#0B1F3A, #C5A880" />
-              </div>
+            {/* Sizes */}
+            <div className={styles.field}>
+              <label>Sizes <span className={styles.hint}>(comma-separated)</span></label>
+              <input name="sizes" value={form.sizes} onChange={handleChange} placeholder="Single, Double, King, Queen" />
             </div>
 
             {/* Features */}
@@ -376,45 +431,116 @@ export default function Admin() {
               <textarea name="features" value={form.features} onChange={handleChange} rows={4} placeholder={"300 Thread Count\nFade Resistant\nHypoallergenic"} />
             </div>
 
-            {/* Image Upload */}
+            {/* ─── Color Variants ──────────────────────────── */}
             <div className={styles.field}>
-              <label>Product Images</label>
-              <div className={styles.imageUploadRow} style={{ flexWrap: 'wrap' }}>
-                <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '8px' }}>
-                  {imgPreviews.map((prevName, idx) => (
-                    <img key={idx} src={prevName} alt="preview" style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: '8px' }} />
-                  ))}
-                </div>
-                <div className={styles.imageUploadBtn} style={{ width: '100%' }}>
-                  <button type="button" onClick={() => fileRef.current?.click()} className={styles.browseBtn} id="admin-browse-img">
-                    📁 Choose Images
-                  </button>
-                  <input
-                    ref={fileRef}
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    onChange={handleFileChange}
-                    style={{ display: 'none' }}
-                  />
-                  {imgFiles.length > 0 && <span className={styles.fileName}>{imgFiles.length} file(s) selected</span>}
-                  {uploadPct > 0 && uploadPct < 100 && (
-                    <div className={styles.progressBar}>
-                      <div className={styles.progressFill} style={{ width: `${uploadPct}%` }} />
+              <label style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '12px', display: 'block' }}>
+                🎨 Color Variants
+                <span className={styles.hint} style={{ marginLeft: '8px' }}>Each color has its own images</span>
+              </label>
+
+              {colorVariants.map((variant, idx) => (
+                <div key={idx} className={styles.variantCard}>
+                  <div className={styles.variantHeader}>
+                    <span className={styles.variantNum}>Color {idx + 1}</span>
+                    {colorVariants.length > 1 && (
+                      <button
+                        type="button"
+                        className={styles.removeVariantBtn}
+                        onClick={() => removeVariant(idx)}
+                      >
+                        ✕ Remove
+                      </button>
+                    )}
+                  </div>
+
+                  <div className={styles.formGrid}>
+                    <div className={styles.field}>
+                      <label>Color Name</label>
+                      <input
+                        value={variant.name}
+                        onChange={e => updateVariant(idx, 'name', e.target.value)}
+                        placeholder="e.g. Navy Blue"
+                      />
                     </div>
-                  )}
-                  <p className={styles.orUrl}>or enter comma-separated URLs directly:</p>
-                  <input
-                    name="imagesText"
-                    value={form.imagesText}
-                    onChange={handleChange}
-                    placeholder="https://img1.jpg, https://img2.jpg ..."
-                    className={styles.imageUrlInput}
-                    style={{ width: '100%' }}
-                  />
+                    <div className={styles.field}>
+                      <label>Hex Color</label>
+                      <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                        <input
+                          type="color"
+                          value={variant.hex}
+                          onChange={e => updateVariant(idx, 'hex', e.target.value)}
+                          style={{ width: '48px', height: '38px', padding: '2px', border: '1px solid var(--border)', borderRadius: '6px', cursor: 'pointer' }}
+                        />
+                        <input
+                          value={variant.hex}
+                          onChange={e => updateVariant(idx, 'hex', e.target.value)}
+                          placeholder="#0B1F3A"
+                          style={{ flex: 1 }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Variant Images */}
+                  <div className={styles.field}>
+                    <label>Images for this color</label>
+                    {variant.previews.length > 0 && (
+                      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '8px' }}>
+                        {variant.previews.map((src, i) => (
+                          <img key={i} src={src} alt={`variant-${idx}-img-${i}`}
+                            style={{ width: '72px', height: '72px', objectFit: 'cover', borderRadius: '8px', border: '2px solid var(--border)' }}
+                          />
+                        ))}
+                      </div>
+                    )}
+                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+                      <button
+                        type="button"
+                        className={styles.browseBtn}
+                        onClick={() => {
+                          if (!fileRefs.current[idx]) fileRefs.current[idx] = document.createElement('input')
+                          const inp = fileRefs.current[idx]
+                          inp.type = 'file'
+                          inp.accept = 'image/*'
+                          inp.multiple = true
+                          inp.onchange = (e) => handleVariantFiles(e, idx)
+                          inp.click()
+                        }}
+                        id={`browse-variant-${idx}`}
+                      >
+                        📁 Upload Images
+                      </button>
+                      {variant.files.length > 0 && (
+                        <span className={styles.fileName}>{variant.files.length} file(s) selected</span>
+                      )}
+                    </div>
+                    <p className={styles.orUrl} style={{ marginTop: '8px' }}>or enter comma-separated URLs:</p>
+                    <input
+                      value={variant.imagesText}
+                      onChange={e => updateVariant(idx, 'imagesText', e.target.value)}
+                      placeholder="https://img1.jpg, https://img2.jpg"
+                      className={styles.imageUrlInput}
+                      style={{ width: '100%' }}
+                    />
+                  </div>
                 </div>
-              </div>
+              ))}
+
+              <button
+                type="button"
+                className={styles.addVariantBtn}
+                onClick={addVariant}
+                id="admin-add-variant-btn"
+              >
+                + Add Another Color
+              </button>
             </div>
+
+            {uploadPct > 0 && uploadPct < 100 && (
+              <div className={styles.progressBar}>
+                <div className={styles.progressFill} style={{ width: `${uploadPct}%` }} />
+              </div>
+            )}
 
             {/* Form Actions */}
             <div className={styles.formActions}>
@@ -453,12 +579,25 @@ export default function Admin() {
                 <div key={p.id} className={styles.tableRow} id={`admin-row-${p.id}`}>
                   <div className={styles.productInfo}>
                     <img
-                      src={p.images?.[0] || p.image || '/placeholder.png'}
+                      src={p.colorVariants?.[0]?.images?.[0] || p.images?.[0] || p.image || '/placeholder.png'}
                       alt={p.name}
                       className={styles.tableImg}
                       onError={e => { e.target.src = '' }}
                     />
-                    <span className={styles.productName}>{p.name}</span>
+                    <div>
+                      <span className={styles.productName}>{p.name}</span>
+                      {p.colorVariants?.length > 0 && (
+                        <div style={{ display: 'flex', gap: '4px', marginTop: '4px' }}>
+                          {p.colorVariants.map((v, i) => (
+                            <span key={i} title={v.name} style={{
+                              display: 'inline-block', width: '14px', height: '14px',
+                              borderRadius: '50%', background: v.hex,
+                              border: '1px solid rgba(0,0,0,0.2)'
+                            }} />
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   </div>
                   <span className={styles.productCat}>{p.category}</span>
                   <span className={styles.productPrice}>{p.price}</span>
