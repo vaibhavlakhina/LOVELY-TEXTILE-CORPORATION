@@ -26,11 +26,7 @@ export default function Navbar() {
       <div className={styles.container}>
         {/* Logo */}
         <Link to="/" className={styles.logo} id="navbar-logo">
-          <span className={styles.logoIcon}>◈</span>
-          <div className={styles.logoText}>
-            <span className={styles.logoPrimary}>Lovely Textile</span>
-            <span className={styles.logoSub}>Corporation</span>
-          </div>
+          <img src="/logo.png" alt="Lovely Textile Corporation Logo" className={styles.logoImg} />
         </Link>
 
         {/* Desktop Nav */}
