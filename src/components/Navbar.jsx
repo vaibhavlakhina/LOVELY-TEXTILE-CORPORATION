@@ -25,15 +25,13 @@ export default function Navbar() {
     <header className={`${styles.navbar} ${scrolled ? styles.scrolled : ''}`}>
       <div className={styles.container}>
         {/* Logo */}
-        {pathname !== '/' ? (
-          <Link to="/" className={styles.logo} id="navbar-logo">
-            <span className={styles.logoIcon}>◈</span>
-            <div className={styles.logoText}>
-              <span className={styles.logoPrimary}>Lovely Textile</span>
-              <span className={styles.logoSub}>Corporation</span>
-            </div>
-          </Link>
-        ) : <div></div>}
+        <Link to="/" className={styles.logo} id="navbar-logo">
+          {pathname !== '/' && <span className={styles.logoIcon}>◈</span>}
+          <div className={styles.logoText}>
+            <span className={styles.logoPrimary}>Lovely Textile</span>
+            <span className={styles.logoSub}>Corporation</span>
+          </div>
+        </Link>
 
         {/* Desktop Nav */}
         <nav className={styles.desktopNav} aria-label="Main navigation">
