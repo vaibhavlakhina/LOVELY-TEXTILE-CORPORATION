@@ -41,6 +41,14 @@
   border: 1px solid rgba(197,168,128,0.35);
   border-radius: 50px;
 }
+.heroLogoImg {
+  display: block;
+  max-width: 250px;
+  height: auto;
+  border-radius: 12px;
+  margin-bottom: 24px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+}
 .heroTitle {
   color: var(--white);
   max-width: 700px;

@@ -31,10 +31,29 @@
   gap: 10px;
   text-decoration: none;
 }
-.logoImg {
-  height: 52px;
-  width: auto;
-  object-fit: contain;
+.logoIcon {
+  font-size: 1.6rem;
+  color: var(--gold);
+  line-height: 1;
+}
+.logoText {
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+}
+.logoPrimary {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--white);
+  letter-spacing: 3px;
+}
+.logoSub {
+  font-size: 0.62rem;
+  letter-spacing: 4px;
+  color: var(--gold);
+  text-transform: uppercase;
+  margin-top: 2px;
 }
 
 /* Desktop Nav */
@@ -106,8 +125,15 @@
   .logo {
     flex: 1;
   }
-  .logoImg {
-    height: 40px;
+  .logoPrimary {
+    font-size: 1.1rem;
+    letter-spacing: 2px;
+  }
+  .logoSub {
+    font-size: 0.52rem;
+  }
+  .logoIcon {
+    font-size: 1.2rem;
   }
 
   /* WhatsApp button — stay on right of logo row */
