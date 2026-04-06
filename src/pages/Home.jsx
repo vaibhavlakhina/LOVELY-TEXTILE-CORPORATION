@@ -34,7 +34,6 @@ export default function Home() {
         />
         <div className={styles.heroContent}>
           <span className={styles.heroLabel}>Premium Home Textiles</span>
-          <img src="/logo.png" alt="LTC Logo" className={styles.heroLogoImg} />
           <h1 className={styles.heroTitle}>
             Wrap Your World<br />
             <em>in Pure Luxury</em>
